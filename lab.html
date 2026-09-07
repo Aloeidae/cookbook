@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cook/Book Lab — Tonight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #121110; --ink: #f4f2ee; --rule: #37342f;
+    --dim: #a9a49b; --faint: #6b665e;
+    --red: #ff4d2e; --orange: #ff9f1c; --yellow: #ffd23f; --green: #8fc93a; --blue: #3fa7ff;
+    --fd: 'Archivo', sans-serif; --ft: 'Space Grotesk', sans-serif;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--ft); user-select: none; }
+  button { font-family: inherit; background: none; border: none; color: inherit; cursor: pointer; }
+
+  .screen { position: fixed; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; }
+  .screen.on { display: flex; }
+
+  .wordmark {
+    position: fixed; top: 22px; left: 26px; z-index: 50;
+    font-family: var(--fd); font-weight: 900; font-size: 16px;
+    text-transform: uppercase; letter-spacing: 0.02em; cursor: pointer;
+  }
+  .wordmark i { color: var(--red); font-style: normal; }
+  .wordmark em { font-style: normal; color: var(--faint); font-weight: 400; margin-left: 8px; letter-spacing: 0.25em; font-size: 11px; }
+  .exit {
+    position: fixed; top: 22px; right: 26px; z-index: 50;
+    font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: var(--faint);
+  }
+  .exit:hover { color: var(--red); }
+
+  .hints {
+    position: fixed; bottom: 20px; left: 0; right: 0; z-index: 50;
+    text-align: center; font-size: 11px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--faint); pointer-events: none;
+  }
+  .hints b { color: var(--dim); font-weight: 500; }
+
+  .q { font-size: 13px; letter-spacing: 0.34em; text-transform: uppercase; color: var(--red); margin-bottom: 4vh; }
+
+  /* ---------- TIME ---------- */
+  #time { cursor: ns-resize; touch-action: none; }
+  .bignum {
+    font-family: var(--fd); font-weight: 900;
+    font-size: clamp(110px, 30vw, 340px); line-height: 0.85;
+    letter-spacing: -0.04em;
+  }
+  .bigunit { font-family: var(--fd); font-weight: 900; font-size: clamp(22px, 4vw, 44px); letter-spacing: 0.28em; color: var(--faint); margin-top: 2vh; text-transform: uppercase; }
+  .fits { margin-top: 5vh; font-size: 14px; color: var(--dim); letter-spacing: 0.1em; }
+  .fits b { color: var(--yellow); font-weight: 600; }
+  .go {
+    margin-top: 4vh; font-size: 13px; letter-spacing: 0.28em; text-transform: uppercase;
+    border: 2px solid var(--ink); padding: 15px 44px; transition: all .15s;
+  }
+  .go:hover { background: var(--red); border-color: var(--red); color: var(--bg); }
+
+  /* ---------- MOOD ---------- */
+  #mood { flex-direction: row; align-items: stretch; }
+  #mood .q { position: absolute; top: 12vh; left: 0; right: 0; text-align: center; z-index: 2; }
+  .half {
+    flex: 1; display: grid; place-items: center; cursor: pointer;
+    font-family: var(--fd); font-weight: 900;
+    font-size: clamp(40px, 8vw, 110px); text-transform: uppercase; letter-spacing: -0.03em;
+    transition: flex .35s cubic-bezier(.2,.8,.2,1), background .25s, color .25s;
+  }
+  .half small { display: block; font-family: var(--ft); font-weight: 400; font-size: 13px; letter-spacing: 0.24em; color: var(--faint); text-align: center; margin-top: 12px; }
+  .half:first-child { border-right: 1px solid var(--rule); }
+  .half:hover { flex: 1.6; }
+  #savory:hover { background: var(--red); color: var(--bg); }
+  #sweet:hover { background: var(--yellow); color: var(--bg); }
+  .half:hover small { color: rgba(18,17,16,.6); }
+
+  /* ---------- DEAL ---------- */
+  #deal { justify-content: flex-end; text-align: left; align-items: stretch; }
+  #deal .photo { position: absolute; inset: 0; }
+  #deal .photo img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(20%) contrast(1.05); }
+  #deal .photo .tile { display: grid; place-items: center; height: 100%; font-size: 20vw; }
+  #deal .photo::after { content: ""; position: absolute; inset: 0; background: linear-gradient(160deg, rgba(18,17,16,.35), rgba(18,17,16,.92) 78%); }
+  #deal .card { position: relative; z-index: 2; padding: 0 6vw 12vh; max-width: 1100px; }
+  #deal .count { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--red); margin-bottom: 2vh; }
+  #deal h2 {
+    font-family: var(--fd); font-weight: 900;
+    font-size: clamp(44px, 8vw, 110px); line-height: 0.92;
+    text-transform: uppercase; letter-spacing: -0.03em;
+  }
+  #deal .dmeta { display: flex; gap: 34px; margin-top: 3.5vh; font-size: 13px; color: var(--dim); }
+  #deal .dmeta b { display: block; color: var(--red); font-family: var(--fd); font-weight: 800; font-size: 24px; }
+  #deal .dact { display: flex; gap: 14px; margin-top: 4.5vh; flex-wrap: wrap; }
+  #deal .dact .cook {
+    font-size: 13px; letter-spacing: 0.28em; text-transform: uppercase;
+    background: var(--red); color: var(--bg); padding: 16px 42px; border: 2px solid var(--red); transition: all .15s;
+  }
+  #deal .dact .cook:hover { background: transparent; color: var(--ink); }
+  #deal .dact .next, #deal .dact .open {
+    font-size: 13px; letter-spacing: 0.28em; text-transform: uppercase;
+    border: 2px solid var(--rule); padding: 16px 30px; color: var(--dim); transition: all .15s;
+  }
+  #deal .dact .next:hover, #deal .dact .open:hover { border-color: var(--ink); color: var(--ink); }
+
+  /* ---------- COOK ---------- */
+  #cook { justify-content: center; }
+  .progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--red); width: 0; z-index: 60; transition: width .3s; }
+  .stage { width: min(92vw, 900px); }
+  .stage .label { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--red); margin-bottom: 3vh; }
+  .stage .stepnum {
+    font-family: var(--fd); font-weight: 900; color: var(--red);
+    font-size: clamp(40px, 7vw, 84px); line-height: 1; margin-bottom: 2.5vh;
+  }
+  .stage .steptext { font-size: clamp(21px, 3vw, 34px); line-height: 1.55; font-weight: 300; color: var(--ink); }
+  .stage .steptext strong { font-weight: 600; color: var(--yellow); }
+  .stage .mise { list-style: none; columns: 2; column-gap: 48px; }
+  .stage .mise li { break-inside: avoid; border-bottom: 1px dashed var(--rule); }
+  .stage .mise li.sub { border: none; color: var(--green); font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; padding: 18px 0 6px; column-span: all; }
+  .stage .mise label { display: flex; gap: 14px; align-items: baseline; padding: 11px 0; font-size: clamp(15px, 1.6vw, 19px); cursor: pointer; }
+  .stage .mise input { accent-color: var(--red); width: 17px; height: 17px; flex-shrink: 0; transform: translateY(2px); }
+  .stage .mise input:checked + span { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--red); }
+  .stage .done {
+    font-family: var(--fd); font-weight: 900; text-transform: uppercase;
+    font-size: clamp(70px, 16vw, 200px); letter-spacing: -0.03em; line-height: .9;
+  }
+  .stage .done i { color: var(--red); font-style: normal; }
+  .stepnav { display: flex; gap: 14px; margin-top: 6vh; }
+  .stepnav button {
+    font-size: 12px; letter-spacing: 0.26em; text-transform: uppercase;
+    border: 2px solid var(--rule); padding: 13px 26px; color: var(--dim); transition: all .15s;
+  }
+  .stepnav button:hover { border-color: var(--ink); color: var(--ink); }
+  .stepnav button.primary { border-color: var(--ink); color: var(--ink); }
+  .stepnav button.primary:hover { background: var(--red); border-color: var(--red); color: var(--bg); }
+  .timerbtn { border-color: var(--blue) !important; color: var(--blue) !important; }
+  .timerbtn:hover { background: var(--blue) !important; color: var(--bg) !important; }
+
+  .timer {
+    position: fixed; right: 26px; bottom: 26px; z-index: 70; display: none;
+    text-align: right; cursor: pointer;
+  }
+  .timer.on { display: block; }
+  .timer .t {
+    font-family: var(--fd); font-weight: 900; font-size: clamp(40px, 6vw, 72px);
+    line-height: 1; color: var(--blue); letter-spacing: -0.02em;
+  }
+  .timer.urgent .t { color: var(--red); }
+  .timer .tl { font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--faint); margin-top: 4px; }
+  .flash { animation: flash 0.8s steps(2) infinite; }
+  @keyframes flash { 50% { opacity: 0.25; } }
+
+  @media (max-width: 700px) {
+    #mood { flex-direction: column; }
+    .half:first-child { border-right: none; border-bottom: 1px solid var(--rule); }
+    .stage .mise { columns: 1; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wordmark" id="home-btn">Cook<i>/</i>Book<em>LAB</em></div>
+<a class="exit" href="index.html">exit lab ↗</a>
+<div class="progress" id="progress"></div>
+
+<!-- STATE 1 : TIME -->
+<section class="screen on" id="time">
+  <div class="q">How long do you have?</div>
+  <div class="bignum" id="time-num">45</div>
+  <div class="bigunit" id="time-unit">minutes</div>
+  <div class="fits"><b id="time-fits">0</b> <span id="time-fits-label">recipes fit</span></div>
+  <button class="go" id="time-go">That's my time ↵</button>
+</section>
+
+<!-- STATE 2 : MOOD -->
+<section class="screen" id="mood">
+  <div class="q">Which way tonight?</div>
+  <div class="half" id="savory">Savory<small id="savory-n"></small></div>
+  <div class="half" id="sweet">Sweet<small id="sweet-n"></small></div>
+</section>
+
+<!-- STATE 3 : DEAL -->
+<section class="screen" id="deal">
+  <div class="photo" id="deal-photo"></div>
+  <div class="card">
+    <div class="count" id="deal-count"></div>
+    <h2 id="deal-title"></h2>
+    <div class="dmeta" id="deal-meta"></div>
+    <div class="dact">
+      <button class="cook" id="deal-cook">Cook this ↵</button>
+      <button class="next" id="deal-next">Deal again ␣</button>
+      <button class="open" id="deal-open">Full recipe ↗</button>
+    </div>
+  </div>
+</section>
+
+<!-- STATE 4 : COOK -->
+<section class="screen" id="cook">
+  <div class="stage" id="stage"></div>
+</section>
+
+<div class="timer" id="timer" title="click to dismiss">
+  <div class="t" id="timer-t">0:00</div>
+  <div class="tl" id="timer-l">timer</div>
+</div>
+
+<div class="hints" id="hints"><b>drag / scroll</b> to set time — <b>enter</b> to continue</div>
+
+<script src="js/recipes.js"></script>
+<script>
+(() => {
+  /* ---------- helpers ---------- */
+  const $ = id => document.getElementById(id);
+  const FR = { "¼": .25, "½": .5, "¾": .75, "⅓": 1/3, "⅔": 2/3, "⅛": .125 };
+  function parseMinutes(t) {
+    let s = t.toLowerCase();
+    for (const [f, v] of Object.entries(FR)) s = s.replace(f, "." + String(v).split(".")[1]);
+    let min = 0, m;
+    if ((m = s.match(/([\d.]+)\s*day/))) min += parseFloat(m[1]) * 1440;
+    if ((m = s.match(/([\d.]+)\s*hr/))) min += parseFloat(m[1]) * 60;
+    if ((m = s.match(/([\d.]+)\s*min/))) min += parseFloat(m[1]);
+    if (s.includes("drying")) min += 1440;
+    return min || 30;
+  }
+  const SWEET = r => r.tags.includes("dessert") || r.tags.includes("candy") || r.tags.includes("snack");
+  const DECK = RECIPES.map(r => ({ ...r, mins: parseMinutes(r.time), sweet: SWEET(r) }));
+  const EFFORT = { 1: "●○○", 2: "●●○", 3: "●●●" };
+
+  /* ---------- state machine ---------- */
+  let state = "time";
+  const screens = ["time", "mood", "deal", "cook"];
+  const HINTS = {
+    time: "<b>drag / scroll</b> to set time — <b>enter</b> to continue",
+    mood: "<b>click a side</b> — or <b>← savory</b> / <b>sweet →</b>",
+    deal: "<b>space</b> deal again — <b>enter</b> cook it — <b>esc</b> start over",
+    cook: "<b>← →</b> steps — <b>esc</b> back to the deal"
+  };
+  function show(s) {
+    state = s;
+    screens.forEach(x => $(x).classList.toggle("on", x === s));
+    $("hints").innerHTML = HINTS[s];
+    if (s !== "cook") $("progress").style.width = 0;
+  }
+
+  /* ---------- TIME : scrubbable number ---------- */
+  // logarithmic scrub from 10 min to 26 hr
+  let pos = 0.35; // 0..1
+  const posToMin = p => Math.round(10 * Math.pow(26 * 60 / 10, p));
+  function snapped() {
+    let v = posToMin(pos);
+    if (v < 60) return Math.round(v / 5) * 5;
+    if (v < 240) return Math.round(v / 15) * 15;
+    if (v < 1440) return Math.round(v / 60) * 60;
+    return 1560; // "a day+"
+  }
+  function drawTime() {
+    const v = snapped();
+    const fits = DECK.filter(r => r.mins <= v).length;
+    if (v >= 1560) { $("time-num").textContent = "∞"; $("time-unit").textContent = "all the time in the world"; }
+    else if (v >= 60) { $("time-num").textContent = (v % 60 ? (v / 60).toFixed(1).replace(".0", "") : v / 60); $("time-unit").textContent = v === 60 ? "hour" : "hours"; }
+    else { $("time-num").textContent = v; $("time-unit").textContent = "minutes"; }
+    $("time-fits").textContent = fits;
+    $("time-fits-label").textContent = fits === 1 ? "recipe fits" : "recipes fit";
+  }
+  function nudge(d) { pos = Math.min(1, Math.max(0, pos + d)); drawTime(); }
+  $("time").addEventListener("wheel", e => { e.preventDefault(); nudge(e.deltaY * -0.0006); }, { passive: false });
+  let dragY = null;
+  $("time").addEventListener("pointerdown", e => { dragY = e.clientY; $("time").setPointerCapture(e.pointerId); });
+  $("time").addEventListener("pointermove", e => { if (dragY == null) return; nudge((dragY - e.clientY) * 0.0022); dragY = e.clientY; });
+  $("time").addEventListener("pointerup", () => dragY = null);
+  $("time-go").addEventListener("click", e => { e.stopPropagation(); toMood(); });
+
+  /* ---------- MOOD ---------- */
+  let limit = 1560, deck = [], dealt = 0;
+  function toMood() {
+    limit = snapped();
+    const fit = DECK.filter(r => r.mins <= limit);
+    const sw = fit.filter(r => r.sweet).length;
+    if (!fit.length) return; // nothing fits; stay
+    $("savory-n").textContent = (fit.length - sw) + " on the table";
+    $("sweet-n").textContent = sw + " on the table";
+    show("mood");
+  }
+  function pickMood(sweet) {
+    deck = DECK.filter(r => r.mins <= limit && r.sweet === sweet);
+    if (!deck.length) deck = DECK.filter(r => r.mins <= limit);
+    // shuffle
+    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+    dealt = -1;
+    show("deal"); dealNext();
+  }
+  $("savory").addEventListener("click", () => pickMood(false));
+  $("sweet").addEventListener("click", () => pickMood(true));
+
+  /* ---------- DEAL ---------- */
+  let current = null;
+  function dealNext() {
+    dealt = (dealt + 1) % deck.length;
+    current = deck[dealt];
+    $("deal-photo").innerHTML = current.img
+      ? `<img src="images/${current.slug}.jpg" alt="">`
+      : `<div class="tile">${current.emoji || "🍽️"}</div>`;
+    $("deal-count").textContent = `Card ${dealt + 1} of ${deck.length} — No. ${String(current.num).padStart(3, "0")}`;
+    $("deal-title").textContent = current.title;
+    $("deal-meta").innerHTML = `
+      <div><b>${current.time}</b>start to finish</div>
+      <div><b>${current.serves}</b>servings</div>
+      <div><b>${EFFORT[current.effort]}</b>effort</div>`;
+  }
+  $("deal-next").addEventListener("click", dealNext);
+  $("deal-open").addEventListener("click", () => location.href = `recipes/${current.slug}.html`);
+  $("deal-cook").addEventListener("click", () => startCook());
+
+  /* ---------- COOK : fetch + parse the real recipe page ---------- */
+  let steps = [], stepIx = -1, wakeLock = null;
+  async function startCook() {
+    const html = await fetch(`recipes/${current.slug}.html`).then(r => r.text());
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    const mise = [...doc.querySelectorAll(".ingredients li")].map(li =>
+      li.classList.contains("subhead")
+        ? { sub: li.textContent.trim() }
+        : { text: li.textContent.replace(/\s+/g, " ").trim() });
+    steps = [...doc.querySelectorAll(".steps li p")].map(p => p.innerHTML);
+    stepIx = -1;
+    show("cook"); drawStage(mise);
+    try { wakeLock = await navigator.wakeLock?.request("screen"); } catch {}
+  }
+  function drawStage(mise) {
+    const st = $("stage");
+    $("progress").style.width = ((stepIx + 1) / (steps.length + 1)) * 100 + "%";
+    if (stepIx === -1) {
+      st.innerHTML = `
+        <div class="label">${current.title} — mise en place</div>
+        <ul class="mise">${mise.map(m => m.sub
+          ? `<li class="sub">${m.sub}</li>`
+          : `<li><label><input type="checkbox"><span>${m.text}</span></label></li>`).join("")}</ul>
+        <div class="stepnav"><button class="primary" data-nav="1">Start cooking →</button></div>`;
+    } else if (stepIx >= steps.length) {
+      st.innerHTML = `
+        <div class="done">Eat<i>.</i></div>
+        <div class="stepnav">
+          <button data-nav="-1">← back</button>
+          <button class="primary" data-restart>Another one</button>
+        </div>`;
+      $("progress").style.width = "100%";
+    } else {
+      const text = steps[stepIx];
+      const t = findTimer(text);
+      st.innerHTML = `
+        <div class="label">${current.title}</div>
+        <div class="stepnum">${String(stepIx + 1).padStart(2, "0")}<span style="color:var(--faint)">/${steps.length}</span></div>
+        <div class="steptext">${text}</div>
+        <div class="stepnav">
+          <button data-nav="-1">← back</button>
+          <button class="primary" data-nav="1">${stepIx === steps.length - 1 ? "Finish →" : "Next →"}</button>
+          ${t ? `<button class="timerbtn" data-timer="${t}">⏱ set ${t >= 60 ? (t / 60 + " hr") : (t + " min")}</button>` : ""}
+        </div>`;
+    }
+    st.querySelectorAll("[data-nav]").forEach(b => b.addEventListener("click", () => move(+b.dataset.nav, mise)));
+    st.querySelector("[data-restart]")?.addEventListener("click", () => { show("time"); drawTime(); });
+    st.querySelector("[data-timer]")?.addEventListener("click", e => startTimer(+e.target.dataset.timer));
+  }
+  function move(d, mise) { stepIx = Math.max(-1, stepIx + d); drawStage(mise); }
+  function findTimer(html) {
+    const s = html.replace(/<[^>]+>/g, "");
+    let m = s.match(/(\d+)\s*(?:–|-|to\s)\s*(\d+)\s*min/i) || s.match(/(\d+)\s*min/i);
+    if (m) return +(m[2] || m[1]);
+    m = s.match(/(\d+)\s*(?:–|-|to\s)?\s*(\d+)?\s*hour/i);
+    if (m) return +(m[2] || m[1]) * 60;
+    return null;
+  }
+
+  /* ---------- timer ---------- */
+  let tEnd = null, tInt = null;
+  function startTimer(mins) {
+    tEnd = Date.now() + mins * 60000;
+    $("timer").classList.add("on"); $("timer").classList.remove("urgent");
+    $("timer-t").classList.remove("flash");
+    $("timer-l").textContent = mins >= 60 ? (mins / 60 + " hr timer") : (mins + " min timer");
+    clearInterval(tInt);
+    tInt = setInterval(tick, 250); tick();
+  }
+  function tick() {
+    const left = Math.max(0, tEnd - Date.now());
+    const s = Math.ceil(left / 1000);
+    $("timer-t").textContent = `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+    $("timer").classList.toggle("urgent", s <= 30);
+    if (!left) {
+      clearInterval(tInt); $("timer-t").classList.add("flash"); $("timer-l").textContent = "done — click to clear";
+      beep();
+    }
+  }
+  function beep() {
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      [0, .5, 1].forEach(t => {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.frequency.value = 880; o.connect(g); g.connect(ctx.destination);
+        g.gain.setValueAtTime(.2, ctx.currentTime + t);
+        g.gain.exponentialRampToValueAtTime(.001, ctx.currentTime + t + .35);
+        o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + .4);
+      });
+    } catch {}
+  }
+  $("timer").addEventListener("click", () => { clearInterval(tInt); $("timer").classList.remove("on"); });
+
+  /* ---------- global keys / reset ---------- */
+  $("home-btn").addEventListener("click", () => { show("time"); drawTime(); });
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape") { show(state === "cook" ? "deal" : "time"); return; }
+    if (state === "time") {
+      if (e.key === "Enter") toMood();
+      if (e.key === "ArrowUp") nudge(.03);
+      if (e.key === "ArrowDown") nudge(-.03);
+    } else if (state === "mood") {
+      if (e.key === "ArrowLeft") pickMood(false);
+      if (e.key === "ArrowRight") pickMood(true);
+    } else if (state === "deal") {
+      if (e.key === " ") { e.preventDefault(); dealNext(); }
+      if (e.key === "Enter") startCook();
+    } else if (state === "cook") {
+      if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); $("stage").querySelector('[data-nav="1"]')?.click(); }
+      if (e.key === "ArrowLeft") $("stage").querySelector('[data-nav="-1"]')?.click();
+    }
+  });
+
+  drawTime();
+})();
+</script>
+</body>
+</html>
