@@ -1,0 +1,58 @@
+// ============================================================
+// COOK/BOOK recipe registry.
+// Every recipe page gets one entry here — this powers the
+// homepage index, hero, search, tag filtering, and thumbnails.
+// img: 1 means images/<slug>.jpg exists; emoji is the tile
+// fallback (and stays as flavor even when a photo arrives).
+// ============================================================
+const RECIPES = [
+  { num: 49, slug: "orange-chicken", title: "Orange Chicken", tags: ["chicken", "takeout", "weeknight"], time: "45 min", serves: 4, effort: 2, img: 1, emoji: "🍊" },
+  { num: 48, slug: "marshmallow-popcorn", title: "Marshmallow Popcorn", tags: ["snack", "candy", "15-minute"], time: "15 min", serves: 6, effort: 1, img: 1, emoji: "🍿" },
+  { num: 47, slug: "air-fryer-smores-dip", title: "Air Fryer S'mores Dip", tags: ["dessert", "snack", "15-minute"], time: "10 min", serves: 4, effort: 1, emoji: "🍫" },
+  { num: 46, slug: "christmas-brownies", title: "Christmas Brownies", tags: ["dessert", "baking", "holiday"], time: "35 min", serves: 12, effort: 1, img: 1, emoji: "🎄" },
+  { num: 45, slug: "blueberry-cheesecake-rolls", title: "Blueberry Cheesecake Rolls", tags: ["baking", "dessert", "breakfast"], time: "3 hr", serves: 6, effort: 2, img: 1, emoji: "🫐" },
+  { num: 44, slug: "creamy-jalapeno-sauce", title: "Creamy Jalapeño Sauce", tags: ["sauce", "spicy", "tex-mex"], time: "1¼ hr", serves: 12, effort: 1, img: 1, emoji: "🌶️" },
+  { num: 43, slug: "strawberry-pretzel-salad", title: "Strawberry Pretzel Salad", tags: ["dessert", "vintage"], time: "12 hr", serves: 12, effort: 1, img: 1, emoji: "🍓" },
+  { num: 42, slug: "peanut-butter-bread", title: "Peanut Butter Bread", tags: ["baking", "bread", "vintage"], time: "1½ hr", serves: 10, effort: 1, img: 1, emoji: "🥜" },
+  { num: 41, slug: "doner-style-kebab", title: "Doner-Style Kebab", tags: ["beef", "weeknight"], time: "55 min", serves: 6, effort: 2, img: 1, emoji: "🥙" },
+  { num: 40, slug: "pierogi", title: "Pierogi", tags: ["polish", "vegetarian"], time: "2 hr", serves: 6, effort: 2, img: 1, emoji: "🥟" },
+  { num: 39, slug: "beef-stroganoff", title: "Beef Stroganoff", tags: ["beef", "weeknight", "one-pot"], time: "35 min", serves: 6, effort: 1, img: 1, emoji: "🍄" },
+  { num: 38, slug: "moroccan-harira", title: "Moroccan Harira", tags: ["soup", "moroccan"], time: "1½ hr", serves: 8, effort: 2, img: 1, emoji: "🥣" },
+  { num: 37, slug: "chili-garlic-noodles", title: "Chili Garlic Noodles", tags: ["noodles", "spicy", "weeknight", "30-minute"], time: "20 min", serves: 2, effort: 1, img: 1, emoji: "🥡" },
+  { num: 36, slug: "no-knead-focaccia", title: "No-Knead Focaccia", tags: ["bread", "baking", "vegetarian"], time: "1 day", serves: 6, effort: 2, img: 1, emoji: "🍞" },
+  { num: 35, slug: "korean-milk-block-cake", title: "Korean Milk Block Cake", tags: ["dessert", "baking", "korean"], time: "4 hr", serves: 9, effort: 3, img: 1, emoji: "🥛" },
+  { num: 34, slug: "nashville-hot-chicken-trompo", title: "Nashville Hot Chicken Trompo", tags: ["chicken", "spicy", "grill"], time: "6½ hr", serves: 6, effort: 2, img: 1, emoji: "🔥" },
+  { num: 33, slug: "quesabirria-tacos", title: "Quesabirria Tacos", tags: ["beef", "mexican", "30-minute"], time: "30 min", serves: 4, effort: 1, img: 1, emoji: "🫔" },
+  { num: 32, slug: "birria-tacos", title: "Birria Tacos", tags: ["beef", "mexican", "spicy", "slow"], time: "4 hr", serves: 6, effort: 2, img: 1, emoji: "🌮" },
+  { num: 31, slug: "general-tsos-chicken", title: "General Tso's Chicken", tags: ["chicken", "takeout", "spicy"], time: "1¼ hr", serves: 2, effort: 2, img: 1, emoji: "🍗" },
+  { num: 30, slug: "pepperoni-garlic-knots", title: "Pepperoni Garlic Knots", tags: ["baking", "bread", "pizza"], time: "4¾ hr", serves: 6, effort: 2, img: 1, emoji: "🧄" },
+  { num: 29, slug: "oklahoma-onion-burger", title: "Oklahoma Onion Burger", tags: ["beef", "burger", "weeknight", "30-minute"], time: "30 min", serves: 4, effort: 1, img: 1, emoji: "🍔" },
+  { num: 28, slug: "mongolian-beef", title: "Mongolian Beef", tags: ["beef", "takeout"], time: "3 hr", serves: 2, effort: 2, img: 1, emoji: "🥩" },
+  { num: 27, slug: "easy-pan-pizza", title: "Easy Pan Pizza", tags: ["pizza", "baking", "italian"], time: "1 day", serves: 2, effort: 2, img: 1, emoji: "🍕" },
+  { num: 26, slug: "pasta-alla-genovese", title: "Pasta alla Genovese", tags: ["pasta", "italian", "beef", "slow"], time: "4½ hr", serves: 6, effort: 2, img: 1, emoji: "🧅" },
+  { num: 25, slug: "stovetop-mac-and-cheese", title: "Stovetop Mac and Cheese", tags: ["pasta", "side", "weeknight"], time: "35 min", serves: 6, effort: 1, img: 1, emoji: "🧀" },
+  { num: 24, slug: "deli-potato-salad", title: "Deli Potato Salad", tags: ["side", "salad"], time: "12 hr", serves: 10, effort: 1, img: 1, emoji: "🥔" },
+  { num: 23, slug: "deli-macaroni-salad", title: "Deli Macaroni Salad", tags: ["side", "pasta", "salad"], time: "12 hr", serves: 12, effort: 1, img: 1, emoji: "🥗" },
+  { num: 22, slug: "korean-bbq-beef", title: "Korean BBQ Beef", tags: ["korean", "beef", "weeknight", "30-minute"], time: "20 min", serves: 4, effort: 1, emoji: "🥢" },
+  { num: 21, slug: "ice-cream-bread", title: "Ice Cream Bread", tags: ["baking", "bread", "dessert"], time: "50 min", serves: 8, effort: 1, emoji: "🍨" },
+  { num: 20, slug: "glazed-donuts", title: "Glazed Donuts", tags: ["dessert", "breakfast", "baking"], time: "2½ hr", serves: 12, effort: 3, emoji: "🍩" },
+  { num: 19, slug: "campfire-mayo", title: "Campfire Mayo", tags: ["sauce", "15-minute"], time: "5 min", serves: 8, effort: 1, emoji: "🏕️" },
+  { num: 18, slug: "buttermilk-biscuits", title: "Buttermilk Biscuits", tags: ["baking", "bread", "breakfast", "side"], time: "35 min", serves: 10, effort: 2, emoji: "🧈" },
+  { num: 17, slug: "gummy-bears", title: "Gummy Bears", tags: ["dessert", "candy"], time: "45 min + drying", serves: 100, effort: 2, emoji: "🐻" },
+  { num: 16, slug: "skillet-cornbread", title: "Skillet Cornbread", tags: ["baking", "side", "bread"], time: "35 min", serves: 8, effort: 1, emoji: "🌽" },
+  { num: 15, slug: "garlic-honey-chicken-blt", title: "Garlic Honey Chicken BLT", tags: ["chicken", "sandwich", "weeknight"], time: "45 min", serves: 2, effort: 2, emoji: "🥪" },
+  { num: 14, slug: "taco-loaded-potato-bowls", title: "Taco Loaded Potato Bowls", tags: ["weeknight", "beef", "tex-mex"], time: "45 min", serves: 4, effort: 1, emoji: "🥔" },
+  { num: 13, slug: "protein-ice-cream", title: "Protein Ice Cream", tags: ["dessert", "high-protein"], time: "24 hr", serves: 2, effort: 1, emoji: "🍦" },
+  { num: 12, slug: "silky-mac-and-cheese", title: "Silky Mac & Cheese", tags: ["pasta", "weeknight", "30-minute"], time: "30 min", serves: 6, effort: 1, emoji: "🫕" },
+  { num: 11, slug: "gochujang-braised-beef", title: "Gochujang Braised Beef", tags: ["spicy", "beef", "korean", "slow"], time: "3½ hr", serves: 4, effort: 2, emoji: "🥘" },
+  { num: 10, slug: "stovetop-naan", title: "Stovetop Naan", tags: ["bread", "vegetarian", "side"], time: "50 min", serves: 6, effort: 2, emoji: "🫓" },
+  { num: 9, slug: "german-potato-salad", title: "German Potato Salad", tags: ["side", "weeknight"], time: "35 min", serves: 6, effort: 1, emoji: "🥓" },
+  { num: 8, slug: "rice-pudding", title: "Rice Pudding", tags: ["dessert"], time: "1¼ hr", serves: 6, effort: 1, img: 1, emoji: "🍚" },
+  { num: 7, slug: "chocolate-chip-macadamia-shortbread", title: "Chocolate Chip Macadamia Shortbread", tags: ["dessert", "baking"], time: "1½ hr", serves: 24, effort: 2, img: 1, emoji: "🍪" },
+  { num: 6, slug: "sheet-pan-breakfast-pizza", title: "Sheet Pan Breakfast Pizza", tags: ["breakfast", "baking"], time: "45 min", serves: 8, effort: 2, img: 1, emoji: "🍳" },
+  { num: 5, slug: "hot-dry-noodles", title: "Hot Dry Noodles", tags: ["weeknight", "spicy", "noodles"], time: "35 min", serves: 2, effort: 1, img: 1, emoji: "🥢" },
+  { num: 4, slug: "japanese-cotton-cheesecake", title: "Japanese Cotton Cheesecake", tags: ["dessert", "baking", "japanese"], time: "1¾ hr", serves: 6, effort: 2, img: 1, emoji: "🍰" },
+  { num: 3, slug: "yukgaejang", title: "Yukgaejang", tags: ["korean", "soup", "beef", "spicy"], time: "2 hr", serves: 4, effort: 2, img: 1, emoji: "🍲" },
+  { num: 2, slug: "creamy-cajun-chicken-pasta", title: "Creamy Cajun Chicken Pasta", tags: ["weeknight", "spicy", "30-minute", "pasta"], time: "30 min", serves: 4, effort: 1, img: 1, emoji: "🍝" },
+  { num: 1, slug: "midnight-chili-oil-noodles", title: "Midnight Chili Oil Noodles", tags: ["weeknight", "spicy", "15-minute", "vegetarian"], time: "12 min", serves: 2, effort: 1, emoji: "🍜" }
+];

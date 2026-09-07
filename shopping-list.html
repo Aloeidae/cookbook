@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopping List — Cook/Book</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/site.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <a class="brand" href="index.html">Cook<i>/</i>Book</a>
+    <nav>
+      <a href="index.html">Index</a>
+    </nav>
+  </header>
+
+  <section class="recipe-head">
+    <div class="kicker">Supplies</div>
+    <h1 class="display">Shopping<br><span class="outline">List</span></h1>
+    <div class="headrow">
+      <div class="meta">
+        <div><b id="shop-recipe-count">0</b>recipes</div>
+        <div><b id="shop-item-count">0</b>items</div>
+      </div>
+      <div class="actions shop-actions">
+        <button class="btn-ghost" id="shop-print">Print list</button>
+        <button class="btn-ghost" id="shop-clear">Clear list</button>
+      </div>
+    </div>
+    <div class="shop-recipes" id="shop-recipes"></div>
+  </section>
+
+  <div id="shop-empty" hidden>
+    Nothing here yet — open any recipe and hit <b>+ Shopping list</b>.
+    Quantities are captured at whatever scale you've set, and the same
+    ingredient across recipes gets summed into one line.
+  </div>
+
+  <section class="shop-body">
+    <ul class="ingredients" id="shop-items"></ul>
+  </section>
+
+  <footer class="sitefoot">
+    <span>Cook/Book</span>
+    <span><a href="index.html">← Back to index</a></span>
+  </footer>
+
+</div>
+</body>
+</html>

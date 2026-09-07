@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cook/Book — Recipe Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400..900&family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/recipes.js"></script>
+<script src="js/site.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <a class="brand" href="index.html">Cook<i>/</i>Book</a>
+    <nav>
+      <a href="index.html">Index</a>
+      <a href="#recipe-index">Latest</a>
+    </nav>
+  </header>
+
+  <section class="home-hero" id="home-hero">
+    <!-- newest recipe rendered by site.js -->
+  </section>
+
+  <section class="toolbar">
+    <div class="search">
+      <span>⌕</span>
+      <input id="search" type="text" placeholder="Search recipes…" autocomplete="off">
+    </div>
+    <div class="chips" id="tag-chips"></div>
+  </section>
+
+  <section class="index" id="recipe-index">
+    <!-- rows rendered by site.js -->
+  </section>
+
+  <footer class="sitefoot">
+    <span>Cook/Book</span>
+    <span>Cooked at home</span>
+  </footer>
+
+</div>
+</body>
+</html>

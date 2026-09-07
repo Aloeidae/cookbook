@@ -1,0 +1,10 @@
+{
+  "num": 8,
+  "slug": "rice-pudding",
+  "title": "Rice Pudding",
+  "tags": ["dessert"],
+  "time": "1¼ hr",
+  "serves": 6,
+  "effort": 1,
+  "note": "Extracted from foodiecrush.com via WebFetch. Source's optional egg-tempering addition kept as an optional step; added a vanilla-extract fallback for the 2 vanilla beans. Display title reads 'Stovetop Rice Pudding' to fill three lines."
+}
