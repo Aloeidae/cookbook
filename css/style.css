@@ -280,9 +280,17 @@ a.tag:hover, button.tag:hover { border-color: var(--accent); color: var(--accent
   .recipe-intro { padding: 10pt 0 0; color: #333; font-size: 10.5pt; max-width: 100%; font-style: italic; }
   .recipe-intro strong { color: #111; }
 
-  /* two columns: ingredients | steps */
+  /* two columns: ingredients | steps (default) */
   .recipe-body { display: grid; grid-template-columns: 2fr 3fr; gap: 22pt; padding: 14pt 0 0; }
   .sec-h { color: #111; border-bottom: 1.5pt solid #111; font-size: 11pt; padding-bottom: 5pt; }
+
+  /* vertical layout (toggled next to the Print button): stacked sections,
+     ingredients flow into two compact columns to save paper */
+  .print-vertical .recipe-body { display: block; }
+  .print-vertical .recipe-body > div:first-child { margin-bottom: 18pt; }
+  .print-vertical .ingredients { columns: 2; column-gap: 26pt; }
+  .print-vertical .ingredients li { break-inside: avoid; }
+  .print-vertical .ingredients .subhead { column-span: all; }
 
   .ingredients li { border-bottom: 0.5pt dashed #999; }
   .ingredients label { padding: 5pt 0; font-size: 10pt; gap: 8pt; }

@@ -129,7 +129,26 @@ function initRecipe() {
   }
 
   const printBtn = document.getElementById("print-btn");
-  if (printBtn) printBtn.addEventListener("click", () => window.print());
+  if (printBtn) {
+    printBtn.addEventListener("click", () => window.print());
+
+    // print layout preference: columns (default) or vertical stack
+    const PRINT_KEY = "cookbook-print-layout";
+    let layout = "columns";
+    try { layout = localStorage.getItem(PRINT_KEY) || "columns"; } catch {}
+    const apply = () => document.body.classList.toggle("print-vertical", layout === "vertical");
+    const toggle = document.createElement("button");
+    toggle.className = "btn-ghost";
+    const label = () => toggle.textContent = layout === "vertical" ? "Layout: vertical" : "Layout: columns";
+    toggle.title = "Toggle printed layout between side-by-side columns and a vertical stack";
+    toggle.addEventListener("click", () => {
+      layout = layout === "vertical" ? "columns" : "vertical";
+      try { localStorage.setItem(PRINT_KEY, layout); } catch {}
+      apply(); label();
+    });
+    apply(); label();
+    printBtn.after(toggle);
+  }
 
   // "Add to shopping list" — injected so recipe pages need no markup changes
   const actions = document.querySelector(".recipe-foot .actions");
