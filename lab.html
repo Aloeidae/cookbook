@@ -12,6 +12,7 @@
     --bg: #121110; --ink: #f4f2ee; --rule: #37342f;
     --dim: #a9a49b; --faint: #6b665e;
     --red: #ff4d2e; --orange: #ff9f1c; --yellow: #ffd23f; --green: #8fc93a; --blue: #3fa7ff;
+    --teal: #2ee0b0; --purple: #a86bff; --pink: #ff5d8f;
     --fd: 'Archivo', sans-serif; --ft: 'Space Grotesk', sans-serif;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -60,21 +61,47 @@
   }
   .go:hover { background: var(--red); border-color: var(--red); color: var(--bg); }
 
-  /* ---------- MOOD ---------- */
-  #mood { flex-direction: row; align-items: stretch; }
-  #mood .q { position: absolute; top: 12vh; left: 0; right: 0; text-align: center; z-index: 2; }
-  .half {
-    flex: 1; display: grid; place-items: center; cursor: pointer;
-    font-family: var(--fd); font-weight: 900;
-    font-size: clamp(40px, 8vw, 110px); text-transform: uppercase; letter-spacing: -0.03em;
-    transition: flex .35s cubic-bezier(.2,.8,.2,1), background .25s, color .25s;
+  /* ---------- CATEGORIES ---------- */
+  #cats { display: none; }
+  #cats.on { display: grid; grid-template-rows: auto 1fr; align-items: stretch; justify-content: normal; }
+  #cats .q { text-align: center; padding: 11vh 0 4vh; margin: 0; }
+  .catgrid {
+    display: grid; grid-template-columns: repeat(3, 1fr); grid-auto-rows: 1fr;
+    border-top: 1px solid var(--rule);
   }
-  .half small { display: block; font-family: var(--ft); font-weight: 400; font-size: 13px; letter-spacing: 0.24em; color: var(--faint); text-align: center; margin-top: 12px; }
-  .half:first-child { border-right: 1px solid var(--rule); }
-  .half:hover { flex: 1.6; }
-  #savory:hover { background: var(--red); color: var(--bg); }
-  #sweet:hover { background: var(--yellow); color: var(--bg); }
-  .half:hover small { color: rgba(18,17,16,.6); }
+  .cat {
+    position: relative; display: grid; place-items: center; cursor: pointer;
+    border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule);
+    font-family: var(--fd); font-weight: 900;
+    font-size: clamp(19px, 2.9vw, 40px); text-transform: uppercase; letter-spacing: -0.02em;
+    text-align: center; padding: 3vh 2vw; line-height: 1.02;
+    transition: background .18s, color .18s;
+  }
+  .cat small { display: block; font-family: var(--ft); font-weight: 400; font-size: 12px; letter-spacing: 0.22em; color: var(--faint); margin-top: 10px; }
+  .cat .k { position: absolute; top: 10px; left: 14px; font-family: var(--ft); font-size: 11px; color: var(--faint); letter-spacing: 0.1em; }
+  .cat:hover { background: var(--c); color: var(--bg); }
+  .cat:hover small, .cat:hover .k { color: rgba(18,17,16,.62); }
+  .cat.off { pointer-events: none; opacity: 0.22; }
+
+  /* ---------- BROWSE ---------- */
+  #browse { display: none; }
+  #browse.on { display: block; overflow-y: auto; }
+  #browse .bg { position: fixed; inset: 0; z-index: 0; opacity: 0; transition: opacity .3s; pointer-events: none; }
+  #browse .bg img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(25%) brightness(0.4); }
+  #browse .bg.show { opacity: 1; }
+  #browse .binner { position: relative; z-index: 1; padding: 14vh 6vw 16vh; }
+  #browse .blabel { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--red); margin-bottom: 4vh; }
+  .brow {
+    display: grid; grid-template-columns: 70px 1fr auto; gap: 24px; align-items: baseline;
+    padding: 2.1vh 0; border-bottom: 1px solid var(--rule); cursor: pointer;
+  }
+  .brow .no { font-family: var(--fd); font-weight: 800; font-size: 15px; color: var(--faint); }
+  .brow h3 {
+    font-family: var(--fd); font-weight: 900; text-transform: uppercase; letter-spacing: -0.02em;
+    font-size: clamp(26px, 4.6vw, 58px); line-height: 1; transition: color .12s, padding-left .15s;
+  }
+  .brow .bt { font-size: 13px; color: var(--dim); }
+  .brow:hover h3 { color: var(--c, var(--red)); padding-left: 14px; }
 
   /* ---------- DEAL ---------- */
   #deal { justify-content: flex-end; text-align: left; align-items: stretch; }
@@ -172,11 +199,19 @@
   <button class="go" id="time-go">That's my time ↵</button>
 </section>
 
-<!-- STATE 2 : MOOD -->
-<section class="screen" id="mood">
-  <div class="q">Which way tonight?</div>
-  <div class="half" id="savory">Savory<small id="savory-n"></small></div>
-  <div class="half" id="sweet">Sweet<small id="sweet-n"></small></div>
+<!-- STATE 2 : CATEGORIES -->
+<section class="screen" id="cats">
+  <div class="q">What sounds good?</div>
+  <div class="catgrid" id="catgrid"></div>
+</section>
+
+<!-- STATE 2b : BROWSE -->
+<section class="screen" id="browse">
+  <div class="bg" id="browse-bg"></div>
+  <div class="binner">
+    <div class="blabel" id="browse-label"></div>
+    <div id="browse-list"></div>
+  </div>
 </section>
 
 <!-- STATE 3 : DEAL -->
@@ -189,6 +224,7 @@
     <div class="dact">
       <button class="cook" id="deal-cook">Cook this ↵</button>
       <button class="next" id="deal-next">Deal again ␣</button>
+      <button class="open" id="deal-browse">Browse deck ☰</button>
       <button class="open" id="deal-open">Full recipe ↗</button>
     </div>
   </div>
@@ -222,17 +258,30 @@
     if (s.includes("drying")) min += 1440;
     return min || 30;
   }
-  const SWEET = r => r.tags.includes("dessert") || r.tags.includes("candy") || r.tags.includes("snack");
-  const DECK = RECIPES.map(r => ({ ...r, mins: parseMinutes(r.time), sweet: SWEET(r) }));
+  const DECK = RECIPES.map(r => ({ ...r, mins: parseMinutes(r.time) }));
   const EFFORT = { 1: "●○○", 2: "●●○", 3: "●●●" };
+
+  // colored category board — each with its own accent and tag filter
+  const CATS = [
+    ["Anything", "#f4f2ee", () => true],
+    ["Pasta + Noodles", "#ff4d2e", r => r.tags.some(t => ["pasta", "noodles", "pizza"].includes(t))],
+    ["Beef", "#ff9f1c", r => r.tags.includes("beef")],
+    ["Chicken", "#ffd23f", r => r.tags.includes("chicken")],
+    ["Soups + Stews", "#8fc93a", r => r.tags.some(t => ["soup", "slow", "one-pot"].includes(t))],
+    ["Breads + Baking", "#2ee0b0", r => (r.tags.includes("bread") || r.tags.includes("baking")) && !r.tags.includes("dessert")],
+    ["Sides + Extras", "#3fa7ff", r => r.tags.some(t => ["side", "salad", "sauce", "snack"].includes(t))],
+    ["Takeout-Style", "#a86bff", r => r.tags.some(t => ["takeout", "tex-mex", "mexican", "burger"].includes(t))],
+    ["Sweets", "#ff5d8f", r => r.tags.includes("dessert") || r.tags.includes("candy")]
+  ];
 
   /* ---------- state machine ---------- */
   let state = "time";
-  const screens = ["time", "mood", "deal", "cook"];
+  const screens = ["time", "cats", "browse", "deal", "cook"];
   const HINTS = {
     time: "<b>drag / scroll</b> to set time — <b>enter</b> to continue",
-    mood: "<b>click a side</b> — or <b>← savory</b> / <b>sweet →</b>",
-    deal: "<b>space</b> deal again — <b>enter</b> cook it — <b>esc</b> start over",
+    cats: "<b>click a category</b> — or press <b>1–9</b> — <b>esc</b> back",
+    browse: "<b>scroll</b> the deck — <b>click</b> a recipe — <b>esc</b> back",
+    deal: "<b>space</b> deal again — <b>enter</b> cook it — <b>b</b> browse the deck — <b>esc</b> start over",
     cook: "<b>← →</b> steps — <b>esc</b> back to the deal"
   };
   function show(s) {
@@ -265,32 +314,71 @@
   function nudge(d) { pos = Math.min(1, Math.max(0, pos + d)); drawTime(); }
   $("time").addEventListener("wheel", e => { e.preventDefault(); nudge(e.deltaY * -0.0006); }, { passive: false });
   let dragY = null;
-  $("time").addEventListener("pointerdown", e => { dragY = e.clientY; $("time").setPointerCapture(e.pointerId); });
+  $("time").addEventListener("pointerdown", e => {
+    if (e.target.closest(".go")) return; // let the button be a button
+    dragY = e.clientY; $("time").setPointerCapture(e.pointerId);
+  });
   $("time").addEventListener("pointermove", e => { if (dragY == null) return; nudge((dragY - e.clientY) * 0.0022); dragY = e.clientY; });
   $("time").addEventListener("pointerup", () => dragY = null);
-  $("time-go").addEventListener("click", e => { e.stopPropagation(); toMood(); });
+  $("time-go").addEventListener("click", () => toCats());
 
-  /* ---------- MOOD ---------- */
-  let limit = 1560, deck = [], dealt = 0;
-  function toMood() {
+  /* ---------- CATEGORIES ---------- */
+  let limit = 1560, deck = [], dealt = 0, catColor = "#ff4d2e", catName = "";
+  function toCats() {
     limit = snapped();
     const fit = DECK.filter(r => r.mins <= limit);
-    const sw = fit.filter(r => r.sweet).length;
-    if (!fit.length) return; // nothing fits; stay
-    $("savory-n").textContent = (fit.length - sw) + " on the table";
-    $("sweet-n").textContent = sw + " on the table";
-    show("mood");
+    if (!fit.length) return;
+    $("catgrid").innerHTML = CATS.map(([name, color, test], i) => {
+      const n = fit.filter(test).length;
+      return `<div class="cat${n ? "" : " off"}" data-cat="${i}" style="--c:${color}; color:${n ? color : "inherit"}">
+        <div><span class="k">${i + 1}</span>${name}<small>${n} on the table</small></div>
+      </div>`;
+    }).join("");
+    show("cats");
   }
-  function pickMood(sweet) {
-    deck = DECK.filter(r => r.mins <= limit && r.sweet === sweet);
-    if (!deck.length) deck = DECK.filter(r => r.mins <= limit);
-    // shuffle
-    for (let i = deck.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [deck[i], deck[j]] = [deck[j], deck[i]]; }
+  function pickCat(i) {
+    const [name, color, test] = CATS[i];
+    deck = DECK.filter(r => r.mins <= limit && test(r));
+    if (!deck.length) return;
+    catColor = color; catName = name;
+    for (let j = deck.length - 1; j > 0; j--) { const k = Math.floor(Math.random() * (j + 1)); [deck[j], deck[k]] = [deck[k], deck[j]]; }
     dealt = -1;
     show("deal"); dealNext();
   }
-  $("savory").addEventListener("click", () => pickMood(false));
-  $("sweet").addEventListener("click", () => pickMood(true));
+  $("catgrid").addEventListener("click", e => {
+    const c = e.target.closest("[data-cat]");
+    if (c) pickCat(+c.dataset.cat);
+  });
+
+  /* ---------- BROWSE ---------- */
+  function toBrowse() {
+    $("browse-label").textContent = `${catName || "Everything"} — ${deck.length} card${deck.length > 1 ? "s" : ""} in the deck`;
+    $("browse-list").innerHTML = [...deck].sort((a, b) => b.num - a.num).map((r, i) => `
+      <div class="brow" data-slug="${r.slug}" style="--c:${catColor}">
+        <span class="no">${String(r.num).padStart(3, "0")}</span>
+        <h3>${r.title}</h3>
+        <span class="bt">${r.time} · ${EFFORT[r.effort]}</span>
+      </div>`).join("");
+    $("browse-bg").innerHTML = "";
+    show("browse");
+  }
+  $("browse-list").addEventListener("pointerover", e => {
+    const row = e.target.closest(".brow");
+    if (!row) return;
+    const r = deck.find(x => x.slug === row.dataset.slug);
+    const bg = $("browse-bg");
+    if (r && r.img) { bg.innerHTML = `<img src="images/${r.slug}.jpg" alt="">`; bg.classList.add("show"); }
+    else bg.classList.remove("show");
+  });
+  $("browse-list").addEventListener("pointerout", e => {
+    if (!e.relatedTarget?.closest?.(".brow")) $("browse-bg").classList.remove("show");
+  });
+  $("browse-list").addEventListener("click", e => {
+    const row = e.target.closest(".brow");
+    if (!row) return;
+    dealt = deck.findIndex(x => x.slug === row.dataset.slug) - 1;
+    show("deal"); dealNext();
+  });
 
   /* ---------- DEAL ---------- */
   let current = null;
@@ -309,6 +397,7 @@
   }
   $("deal-next").addEventListener("click", dealNext);
   $("deal-open").addEventListener("click", () => location.href = `recipes/${current.slug}.html`);
+  $("deal-browse").addEventListener("click", () => toBrowse());
   $("deal-cook").addEventListener("click", () => startCook());
 
   /* ---------- COOK : fetch + parse the real recipe page ---------- */
@@ -407,17 +496,23 @@
   /* ---------- global keys / reset ---------- */
   $("home-btn").addEventListener("click", () => { show("time"); drawTime(); });
   document.addEventListener("keydown", e => {
-    if (e.key === "Escape") { show(state === "cook" ? "deal" : "time"); return; }
+    if (e.key === "Escape") {
+      const back = { cook: "deal", browse: "deal", deal: "cats", cats: "time" };
+      show(back[state] || "time");
+      if (state === "time") drawTime();
+      return;
+    }
     if (state === "time") {
-      if (e.key === "Enter") toMood();
+      if (e.key === "Enter") toCats();
       if (e.key === "ArrowUp") nudge(.03);
       if (e.key === "ArrowDown") nudge(-.03);
-    } else if (state === "mood") {
-      if (e.key === "ArrowLeft") pickMood(false);
-      if (e.key === "ArrowRight") pickMood(true);
+    } else if (state === "cats") {
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= CATS.length) pickCat(n - 1);
     } else if (state === "deal") {
       if (e.key === " ") { e.preventDefault(); dealNext(); }
       if (e.key === "Enter") startCook();
+      if (e.key.toLowerCase() === "b") toBrowse();
     } else if (state === "cook") {
       if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); $("stage").querySelector('[data-nav="1"]')?.click(); }
       if (e.key === "ArrowLeft") $("stage").querySelector('[data-nav="-1"]')?.click();
