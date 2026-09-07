@@ -1,24 +1,38 @@
 /* ============================================================
-   COOK/BOOK — "Homestead Contrast" design system
-   Warm paper ground, espresso ink, rust accent.
-   Same bold Archivo (display) + Space Grotesk (text).
+   COOK/BOOK — "Noir" design system
+   The original near-black + chili, organized, with a small
+   family of vivid accents. Archivo (display) + Space Grotesk.
    ============================================================ */
 
 :root {
-  --bg: #f4efe3;      /* warm paper */
-  --bg2: #fdfaf2;     /* lighter card paper */
-  --ink: #221b12;     /* espresso */
-  --accent: #a04f24;  /* rust */
-  --rule: #ddd2bc;    /* warm hairline */
-  --dim: #7d715e;
-  --faint: #a99c85;
-  --text: #463c2d;    /* body copy on paper */
+  --bg: #121110;      /* warm near-black */
+  --bg2: #1c1a18;     /* raised card surface */
+  --ink: #f4f2ee;     /* bone white */
+  --accent: #ff4d2e;  /* chili — the primary */
+  --rule: #37342f;
+  --dim: #a9a49b;
+  --faint: #6b665e;
+  --text: #d6d2ca;    /* body copy */
+
+  /* accent family — one per course group / aisle */
+  --acc-red: #ff4d2e;
+  --acc-orange: #ff9f1c;
+  --acc-yellow: #ffd23f;
+  --acc-green: #8fc93a;
+  --acc-blue: #3fa7ff;
 
   --font-display: 'Archivo', sans-serif;
   --font-text: 'Space Grotesk', sans-serif;
 
   --max: 1160px;
 }
+
+/* accent scoping: anything inside an .acc-* container picks up --ga */
+.acc-red { --ga: var(--acc-red); }
+.acc-orange { --ga: var(--acc-orange); }
+.acc-yellow { --ga: var(--acc-yellow); }
+.acc-green { --ga: var(--acc-green); }
+.acc-blue { --ga: var(--acc-blue); }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -95,11 +109,11 @@ a.tag:hover, button.tag:hover { border-color: var(--accent); color: var(--accent
 .group-h {
   font-family: var(--font-display); font-weight: 900; font-size: 19px;
   text-transform: uppercase; letter-spacing: 0.04em;
-  border-bottom: 2px solid var(--ink);
+  border-bottom: 2px solid var(--ga, var(--ink));
   padding: 56px 0 10px; margin-bottom: 26px;
   display: flex; justify-content: space-between; align-items: baseline;
 }
-.group-h span { font-family: var(--font-text); font-weight: 400; font-size: 13px; color: var(--faint); letter-spacing: 0.1em; }
+.group-h span { font-family: var(--font-text); font-weight: 400; font-size: 13px; color: var(--ga, var(--faint)); letter-spacing: 0.1em; }
 .cards {
   display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 36px 26px;
@@ -111,9 +125,9 @@ a.tag:hover, button.tag:hover { border-color: var(--accent); color: var(--accent
 }
 .card .card-ph img {
   width: 100%; height: 100%; object-fit: cover; display: block;
-  filter: saturate(0.85); transition: transform .25s, filter .25s;
+  filter: grayscale(30%) contrast(1.06); transition: transform .25s, filter .25s;
 }
-.card:hover .card-ph img { transform: scale(1.04); filter: saturate(1); }
+.card:hover .card-ph img { transform: scale(1.04); filter: none; }
 .card .card-ph .tile { display: grid; place-items: center; height: 100%; font-size: 46px; }
 .card .line {
   display: flex; justify-content: space-between;
@@ -125,7 +139,8 @@ a.tag:hover, button.tag:hover { border-color: var(--accent); color: var(--accent
   text-transform: uppercase; letter-spacing: -0.005em; line-height: 1.2;
   transition: color .15s;
 }
-.card:hover h3 { color: var(--accent); }
+.card:hover h3 { color: var(--ga, var(--accent)); }
+.card:hover .line span:first-child { color: var(--ga, var(--accent)); }
 .index .empty { padding: 48px 0; color: var(--faint); font-size: 15px; }
 
 /* ---------- Search + filter bar ---------- */
@@ -144,10 +159,10 @@ a.tag:hover, button.tag:hover { border-color: var(--accent); color: var(--accent
 .toolbar .chips { display: flex; flex-wrap: wrap; gap: 10px; }
 
 /* ---------- Photo placeholder (until real photos) ---------- */
-.ph { position: relative; overflow: hidden; background: linear-gradient(135deg, #e9e0ca, #d6c8a8); }
+.ph { position: relative; overflow: hidden; background: linear-gradient(135deg, #26231f, #3b362f); }
 .ph::after {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(ellipse at 35% 40%, rgba(255,255,255,0.35), transparent 55%);
+  background: radial-gradient(ellipse at 35% 40%, rgba(255,255,255,0.12), transparent 55%);
 }
 .hero-img { width: 100%; aspect-ratio: 21/9; object-fit: cover; display: block; }
 .ph.hero-img { aspect-ratio: 21/9; }
@@ -198,7 +213,7 @@ a.tag:hover, button.tag:hover { border-color: var(--accent); color: var(--accent
 .ingredients input:checked + span { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--accent); }
 .ingredients .subhead {
   font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase;
-  color: var(--accent); padding: 24px 0 8px; border-bottom: none;
+  color: var(--ga, var(--accent)); padding: 24px 0 8px; border-bottom: none;
 }
 
 .steps { list-style: none; counter-reset: step; }
@@ -253,7 +268,7 @@ a.tag:hover, button.tag:hover { border-color: var(--accent); color: var(--accent
   display: block; aspect-ratio: 4/3; overflow: hidden;
   border: 1px solid var(--rule); background: var(--bg2);
 }
-.hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(0.9); }
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(15%) contrast(1.05); }
 .hero-photo .tile { display: grid; place-items: center; height: 100%; font-size: 96px; }
 
 /* ---------- Responsive ---------- */

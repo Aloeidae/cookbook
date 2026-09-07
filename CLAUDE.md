@@ -3,10 +3,16 @@
 A static, minimalist cookbook site. No build step, no framework — plain HTML/CSS/JS
 served statically (dev: `python -m http.server 8123`, configured in .claude/launch.json).
 
-## Design system — "Homestead Contrast"
+## Design system — "Noir"
 
-- Warm paper `#F4EFE3` ground, espresso `#221B12` ink, rust `#A04F24` accent, warm `#DDD2BC` rules.
-  (Rethemed from the original near-black "Contrast" at the user's request — same bold type, warm homestead palette.)
+- The original dark Contrast, organized: near-black `#121110` ground, bone `#F4F2EE` ink,
+  chili `#FF4D2E` primary accent, `#37342F` rules.
+- Accent family (use via `.acc-*` classes which set `--ga`): red `#FF4D2E`, orange `#FF9F1C`,
+  yellow `#FFD23F`, green `#8FC93A`, blue `#3FA7FF`. Homepage groups: Mains=red,
+  Sides & Breads=green, Sweets & Baking=yellow, Sauces & Snacks=blue; shopping aisles cycle
+  all five. Accents appear only on rules, counts, numbers, and hovers — chili stays primary
+  everywhere else (recipe pages, chips, buttons).
+  (History: design went Contrast dark → Homestead paper → back to this multi-accent Noir.)
 - Homepage renders recipes as photo cards grouped into courses (Mains / Sides & Breads /
   Sweets & Baking / Sauces & Snacks) — grouping derived from tags in `groupOf()` in js/site.js.
 - Shopping list is unit-aware: `parseIngredient()` normalizes names and units, sums across

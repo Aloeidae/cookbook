@@ -78,8 +78,12 @@ function initIndex() {
   searchEl.addEventListener("input", render);
   renderChips();
 
-  // course grouping keeps the shelf organized
+  // course grouping keeps the shelf organized; each group gets its own accent
   const GROUP_ORDER = ["Mains", "Sides & Breads", "Sweets & Baking", "Sauces & Snacks"];
+  const GROUP_ACCENT = {
+    "Mains": "acc-red", "Sides & Breads": "acc-green",
+    "Sweets & Baking": "acc-yellow", "Sauces & Snacks": "acc-blue"
+  };
   function groupOf(r) {
     const t = r.tags;
     if (t.includes("sauce") || t.includes("snack")) return "Sauces & Snacks";
@@ -112,8 +116,8 @@ function initIndex() {
     list.innerHTML = GROUP_ORDER
       .filter(g => byGroup[g])
       .map(g => `
-        <h2 class="group-h">${g}<span>${byGroup[g].length} recipe${byGroup[g].length > 1 ? "s" : ""}</span></h2>
-        <div class="cards">${byGroup[g].map(card).join("")}</div>`)
+        <h2 class="group-h ${GROUP_ACCENT[g]}">${g}<span>${byGroup[g].length} recipe${byGroup[g].length > 1 ? "s" : ""}</span></h2>
+        <div class="cards ${GROUP_ACCENT[g]}">${byGroup[g].map(card).join("")}</div>`)
       .join("");
   }
 
@@ -313,6 +317,10 @@ const AISLES = [
   ["Produce", /onion|scallion|garlic|ginger|potato|tomato|lettuce|parsley|cilantro|basil|celery|carrot|mushroom|sprout|cabbage|pepper|jalape|lemon|lime|orange|blueberr|strawberr|\bcorn\b|leek|herb|avocado|cucumber|apple|banana|gosari|fernbrake/],
 ];
 const AISLE_ORDER = ["Produce", "Meat & Seafood", "Dairy & Eggs", "Pantry", "Spices & Seasoning", "Everything Else"];
+const AISLE_ACCENT = {
+  "Produce": "acc-green", "Meat & Seafood": "acc-red", "Dairy & Eggs": "acc-yellow",
+  "Pantry": "acc-orange", "Spices & Seasoning": "acc-blue", "Everything Else": ""
+};
 function aisleOf(it) {
   const hay = it.name || "";
   for (const [aisle, re] of AISLES) if (re.test(hay)) return aisle;
@@ -383,7 +391,7 @@ function initShopping() {
     rows.forEach(it => (byAisle[aisleOf(it)] = byAisle[aisleOf(it)] || []).push(it));
     itemsEl.innerHTML = AISLE_ORDER
       .filter(a => byAisle[a])
-      .map(a => `<li class="subhead">${a}</li>` +
+      .map(a => `<li class="subhead ${AISLE_ACCENT[a]}">${a}</li>` +
         byAisle[a].sort((x, y) => x.name.localeCompare(y.name)).map(it => {
           const label = it.from.length > 1
             ? `${totalLabel(it)} ${it.name} <span class="from">× ${it.from.length} recipes</span>`
