@@ -16,16 +16,23 @@ function initIndex() {
   const chipsEl = document.getElementById("tag-chips");
   const heroEl = document.getElementById("home-hero");
 
-  // Hero = newest recipe
+  // Hero = newest recipe, type + photo
   const newest = [...RECIPES].sort((a, b) => b.num - a.num)[0];
   if (heroEl && newest) {
     heroEl.innerHTML = `
-      <div class="kicker">Recipe ${pad(newest.num)} / ${newest.tags[0]}</div>
-      <a class="display" href="recipes/${newest.slug}.html">${heroTitle(newest.title)}</a>
-      <div class="meta">
-        <div><b>${newest.time}</b>start to finish</div>
-        <div><b>${newest.serves}</b>servings</div>
-        <div><b>${EFFORT[newest.effort]}</b>effort</div>
+      <div class="hero-grid">
+        <div>
+          <div class="kicker">Latest — Recipe ${pad(newest.num)}</div>
+          <a class="display" href="recipes/${newest.slug}.html">${heroTitle(newest.title)}</a>
+          <div class="meta">
+            <div><b>${newest.time}</b>start to finish</div>
+            <div><b>${newest.serves}</b>servings</div>
+            <div><b>${EFFORT[newest.effort]}</b>effort</div>
+          </div>
+        </div>
+        <a class="hero-photo" href="recipes/${newest.slug}.html">${newest.img
+          ? `<img src="images/${newest.slug}.jpg" alt="">`
+          : `<div class="tile">${newest.emoji || "🍽️"}</div>`}</a>
       </div>`;
   }
 
@@ -71,6 +78,24 @@ function initIndex() {
   searchEl.addEventListener("input", render);
   renderChips();
 
+  // course grouping keeps the shelf organized
+  const GROUP_ORDER = ["Mains", "Sides & Breads", "Sweets & Baking", "Sauces & Snacks"];
+  function groupOf(r) {
+    const t = r.tags;
+    if (t.includes("sauce") || t.includes("snack")) return "Sauces & Snacks";
+    if (t.includes("dessert") || t.includes("candy")) return "Sweets & Baking";
+    if (t.includes("bread") || t.includes("side") || t.includes("salad")) return "Sides & Breads";
+    return "Mains";
+  }
+  const card = r => `
+    <a class="card" href="recipes/${r.slug}.html">
+      <div class="card-ph">${r.img
+        ? `<img src="images/${r.slug}.jpg" alt="" loading="lazy">`
+        : `<div class="tile">${r.emoji || "🍽️"}</div>`}</div>
+      <div class="line"><span>No. ${pad(r.num)}</span><span>${r.time}</span></div>
+      <h3>${r.title}</h3>
+    </a>`;
+
   function render() {
     const q = searchEl.value.trim().toLowerCase();
     const rows = [...RECIPES]
@@ -82,16 +107,14 @@ function initIndex() {
       list.innerHTML = `<div class="empty">Nothing matches — try another tag or search.</div>`;
       return;
     }
-    list.innerHTML = rows.map(r => `
-      <a class="row" href="recipes/${r.slug}.html">
-        <div class="idx">${pad(r.num)}</div>
-        ${r.img
-          ? `<img class="thumb" src="images/${r.slug}.jpg" alt="" loading="lazy">`
-          : `<div class="thumb tile">${r.emoji || "🍽️"}</div>`}
-        <h3>${r.title}</h3>
-        <div class="tags">${r.tags.slice(0, 2).map(t => `<span class="tag">${t}</span>`).join("")}</div>
-        <div class="time">${r.time}</div>
-      </a>`).join("");
+    const byGroup = {};
+    rows.forEach(r => (byGroup[groupOf(r)] = byGroup[groupOf(r)] || []).push(r));
+    list.innerHTML = GROUP_ORDER
+      .filter(g => byGroup[g])
+      .map(g => `
+        <h2 class="group-h">${g}<span>${byGroup[g].length} recipe${byGroup[g].length > 1 ? "s" : ""}</span></h2>
+        <div class="cards">${byGroup[g].map(card).join("")}</div>`)
+      .join("");
   }
 
   render();
@@ -219,6 +242,83 @@ function updateNavListCount() {
   a.textContent = n ? `List (${n})` : "List";
 }
 
+/* --- ingredient intelligence: units, totals, aisles --- */
+const UNITS = {
+  cup: ["cup", "cups"], tbsp: ["tbsp", "tablespoon", "tablespoons"], tsp: ["tsp", "teaspoon", "teaspoons"],
+  oz: ["oz", "ounce", "ounces"], lb: ["lb", "lbs", "pound", "pounds"]
+};
+const UNIT_LOOKUP = {};
+for (const [u, names] of Object.entries(UNITS)) names.forEach(n => UNIT_LOOKUP[n] = u);
+const VOL_TSP = { cup: 48, tbsp: 3, tsp: 1 };
+const FAMILY = u => (u in VOL_TSP) ? "vol" : (u === "oz" || u === "lb") ? "wt" : "count";
+
+function parseIngredient(qty, text) {
+  let unit = null, rest = text;
+  const m = qty != null && text.match(/^([A-Za-z]+)\s+(.+)$/);
+  if (m && UNIT_LOOKUP[m[1].toLowerCase()]) { unit = UNIT_LOOKUP[m[1].toLowerCase()]; rest = m[2]; }
+  // normalize the name: drop parentheticals, prep notes, "plus more…" clauses
+  const name = rest
+    .replace(/\([^)]*\)/g, "")
+    .replace(/,\s*(plus|extra|divided|to taste|to serve|to finish|for ).*$/i, "")
+    .split(",")[0]
+    .replace(/^(melted|softened|cold|warm|hot|chopped|minced|grated|shredded|sliced|diced|crushed|toasted|packed)\s+/i, "")
+    .replace(/\s+/g, " ").trim().toLowerCase();
+  const family = FAMILY(unit);
+  const total = qty == null ? null
+    : family === "vol" ? qty * VOL_TSP[unit]
+    : family === "wt" ? qty * (unit === "lb" ? 16 : 1)
+    : qty;
+  return { qty, unit, family, name, raw: text, total, key: family + "|" + name };
+}
+
+// render a summed total back into kitchen-friendly units
+function totalLabel(it) {
+  if (it.total == null) return "";
+  const clean = v => { const f = fmt(v); return f.includes(".") ? null : f; };
+  if (it.family === "vol") {
+    const t = it.total;
+    const c = t >= 12 && clean(t / 48);
+    if (c) return c + (t / 48 > 1 ? " cups" : " cup");
+    if (t >= 48) {
+      const whole = Math.floor(t / 48), remT = clean((t - whole * 48) / 3);
+      if (remT) return `${whole} cup${whole > 1 ? "s" : ""} + ${remT} tbsp`;
+    }
+    const tb = t >= 3 && clean(t / 3);
+    if (tb) return tb + " tbsp";
+    if (t >= 3) {
+      const whole = Math.floor(t / 3), rem = clean(t - whole * 3);
+      if (rem) return `${whole} tbsp + ${rem} tsp`;
+    }
+    return (clean(t) || (+t.toFixed(2))) + " tsp";
+  }
+  if (it.family === "wt") {
+    const o = it.total;
+    const l = o >= 16 && clean(o / 16);
+    if (l) return l + " lb";
+    if (o >= 16) {
+      const whole = Math.floor(o / 16), rem = clean(o - whole * 16);
+      if (rem) return `${whole} lb + ${rem} oz`;
+    }
+    return (clean(o) || (+o.toFixed(1))) + " oz";
+  }
+  return fmt(it.total);
+}
+
+// store-aisle classification, checked in order (specific before generic)
+const AISLES = [
+  ["Pantry", /broth|stock|noodle|pasta|macaroni|cavatappi|fettuccine|penne|orzo|\brice\b|flour|sugar|\boil\b|vinegar|soy sauce|cornstarch|corn starch|baking powder|baking soda|yeast|honey|syrup|molasses|chocolate|cocoa|marshmallow|peanut butter|gochujang|chili crisp|sesame|jell-?o|gelatin|graham|pretzel|panko|cornflake|breadcrumb|evaporated milk|condensed|shaoxing|mirin|\bwine\b|sherry|bean|chickpea|lentil|tortilla|\bbun\b|\bbread\b|pudding mix|protein|whey|sweetener|date|hazelnut|macadamia|walnut|pecan|raisin|tomato paste|crushed tomato|canned|mayo|mayonnaise|ketchup|bbq sauce|mustard|corn syrup|food coloring|sprinkles|cookie dough|brownie mix|ice cream|popcorn|crackers|chips/],
+  ["Spices & Seasoning", /garlic powder|onion powder|paprika|cajun|chili powder|cayenne|cumin|coriander|turmeric|oregano|thyme|rosemary|cinnamon|nutmeg|ground cloves?|whole cloves?|pumpkin pie spice|star anise|peppercorn|bay lea|salt\b|black pepper|white pepper|pepper flakes|gochugaru|citric acid|cream of tartar|seasoning|vanilla|five spice|msg/],
+  ["Dairy & Eggs", /\bmilk\b|butter|cream cheese|heavy cream|\bcream\b|cheese|\begg|yogurt|buttermilk|cool whip|parmesan|mozzarella|cheddar|american|half-and-half/],
+  ["Meat & Seafood", /beef|brisket|chuck|chicken|pork|bacon|sausage|steak|\brib|lamb|turkey|pepperoni|shrimp|fish/],
+  ["Produce", /onion|scallion|garlic|ginger|potato|tomato|lettuce|parsley|cilantro|basil|celery|carrot|mushroom|sprout|cabbage|pepper|jalape|lemon|lime|orange|blueberr|strawberr|\bcorn\b|leek|herb|avocado|cucumber|apple|banana|gosari|fernbrake/],
+];
+const AISLE_ORDER = ["Produce", "Meat & Seafood", "Dairy & Eggs", "Pantry", "Spices & Seasoning", "Everything Else"];
+function aisleOf(it) {
+  const hay = it.name || "";
+  for (const [aisle, re] of AISLES) if (re.test(hay)) return aisle;
+  return "Everything Else";
+}
+
 // shopping-list.html renderer
 function initShopping() {
   const itemsEl = document.getElementById("shop-items");
@@ -259,30 +359,38 @@ function initShopping() {
         <button data-remove="${r.slug}" title="Remove">×</button>
       </span>`).join("");
 
-    // merge identical lines (same text after the quantity), summing quantities
+    // smart merge: same ingredient across recipes sums into one usable total,
+    // converting across cups/tbsp/tsp and lb/oz
     const merged = new Map();
     for (const r of list) {
       for (const it of r.items) {
-        const key = it.text.toLowerCase();
-        const prev = merged.get(key);
+        const p = parseIngredient(it.qty, it.text);
+        const prev = merged.get(p.key);
         if (prev) {
-          if (prev.qty != null && it.qty != null) prev.qty += it.qty;
-          else if (it.qty != null) prev.qty = it.qty;
+          if (prev.total != null && p.total != null) prev.total += p.total;
+          else prev.total = prev.total ?? p.total;
           prev.from.push(r.title);
         } else {
-          merged.set(key, { qty: it.qty, text: it.text, from: [r.title] });
+          merged.set(p.key, { ...p, from: [r.title] });
         }
       }
     }
-    const rows = [...merged.values()].sort((a, b) => a.text.localeCompare(b.text));
+    const rows = [...merged.values()];
     document.getElementById("shop-item-count").textContent = rows.length;
 
-    itemsEl.innerHTML = rows.map(it => {
-      const key = it.text.toLowerCase();
-      const label = (it.qty != null ? fmt(it.qty) + " " : "") + it.text;
-      const multi = it.from.length > 1 ? ` <span class="from">× ${it.from.length} recipes</span>` : "";
-      return `<li><label><input type="checkbox" data-key="${key}"${done[key] ? " checked" : ""}><span>${label}${multi}</span></label></li>`;
-    }).join("");
+    // group by store aisle
+    const byAisle = {};
+    rows.forEach(it => (byAisle[aisleOf(it)] = byAisle[aisleOf(it)] || []).push(it));
+    itemsEl.innerHTML = AISLE_ORDER
+      .filter(a => byAisle[a])
+      .map(a => `<li class="subhead">${a}</li>` +
+        byAisle[a].sort((x, y) => x.name.localeCompare(y.name)).map(it => {
+          const label = it.from.length > 1
+            ? `${totalLabel(it)} ${it.name} <span class="from">× ${it.from.length} recipes</span>`
+            : `${it.qty != null ? fmt(it.qty) + " " : ""}${it.raw}`;
+          return `<li><label><input type="checkbox" data-key="${it.key}"${done[it.key] ? " checked" : ""}><span>${label}</span></label></li>`;
+        }).join(""))
+      .join("");
   }
 
   render();

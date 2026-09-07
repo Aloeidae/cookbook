@@ -3,9 +3,15 @@
 A static, minimalist cookbook site. No build step, no framework — plain HTML/CSS/JS
 served statically (dev: `python -m http.server 8123`, configured in .claude/launch.json).
 
-## Design system — "Contrast"
+## Design system — "Homestead Contrast"
 
-- Near-black `#0E0E0E` ground, bone-white `#F4F2EE` ink, chili `#FF4D2E` accent, `#3A3A3A` rules.
+- Warm paper `#F4EFE3` ground, espresso `#221B12` ink, rust `#A04F24` accent, warm `#DDD2BC` rules.
+  (Rethemed from the original near-black "Contrast" at the user's request — same bold type, warm homestead palette.)
+- Homepage renders recipes as photo cards grouped into courses (Mains / Sides & Breads /
+  Sweets & Baking / Sauces & Snacks) — grouping derived from tags in `groupOf()` in js/site.js.
+- Shopping list is unit-aware: `parseIngredient()` normalizes names and units, sums across
+  cups/tbsp/tsp and lb/oz, and groups by store aisle (`AISLES` regexes). Keep ingredient lines
+  in the "qty unit name, prep-note" shape so parsing keeps working.
 - Fonts: Archivo (900 display, uppercase, tight tracking) + Space Grotesk (text). Loaded from Google Fonts.
 - All tokens live in `css/style.css` `:root`. Never hardcode colors in pages.
 - Print: every recipe page prints as a light-mode black-on-white recipe card
